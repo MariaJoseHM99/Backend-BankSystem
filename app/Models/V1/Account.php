@@ -4,11 +4,16 @@ namespace App\Models\V1;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Passport\HasApiTokens;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class Account extends Authenticatable {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
+
+    protected $fillable = [
+        'name', 'email', 'password',
+    ];
 
     /**
      * Table in database.
@@ -37,7 +42,7 @@ class Account extends Authenticatable {
      * @var array
      */
     protected $hidden = [
-        "password",
+        "password"
     ];
 
     /**
@@ -46,8 +51,7 @@ class Account extends Authenticatable {
      * @var array
      */
     protected $casts = [
-        "roleId" => "integer",
-        "createdAt" => "dateTime",
+        "roleId" => "integer"
     ];
 
     /**
