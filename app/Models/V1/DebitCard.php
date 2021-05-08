@@ -53,7 +53,7 @@ class DebitCard extends Model {
     protected $dates = [];
 
     /**
-     * Adds an amount to the balance.
+     * Deposits an amount to the balance.
      *
      * @param float $amount
      * @throws Exception

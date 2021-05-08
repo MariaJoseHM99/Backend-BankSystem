@@ -1,22 +1,21 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\Response;
-use Carbon\Carbon;
-use Illuminate\Tttp\Token;
+use App\Http\Controllers\Controller;
 use App\Models\V1\Account;
 use App\Models\V1\Role;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Tttp\Token;
 
+class LoginController extends Controller {
 
-class LoginController extends Controller
-{ 
-    public function signUp(Request $request)
-    {
-        $request->validate([
+    public function signUp(Request $request) {
+        $validation = $request->validate([
             'name' => 'required|string',
             'lastname' => 'required|string',
             'username' => 'required|string',
@@ -47,19 +46,28 @@ class LoginController extends Controller
         $account->email = $request->input("email");
         $account->password = Hash::make($request->input("password"));
         $role = Role::where("name", "Cliente")->select("roleId")->get()->first();
+        if ($role == null) {
+            return response()->json([
+                "status" => "failure",
+                "message" => "Role Client not found."
+            ], 500);
+        }
         $account->roleId = $role->roleId;
         $account->createdAt = date("Y-m-d H:i:s");
-        $account->save();
-        
-
+        if (!$account->save()) {
+            return response()->json([
+                "status" => "failure",
+                "message" => "An error occurred on saving account."
+            ], 500);
+        }
 
         return response()->json([
-            'message' => 'Successfully created account!'
+            "status" => "success",
+            'message' => 'Account created successfully!'
         ], 201);
     }
 
-    public function login(Request $request)
-    {
+    public function login(Request $request) {
         $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
@@ -68,11 +76,13 @@ class LoginController extends Controller
         $account = Account::where("email", $request->input("email"))->get()->first();
         if ($account == null) {
             return response()->json([
+                "status" => "failure",
                 'message' => 'Unauthorized Email'
             ], 401);
         }
         if (!Hash::check($request->input("password"), $account->password)) {
             return response()->json([
+                "status" => "failure",
                 'message' => 'Unauthorized Password'
             ], 401);
         }
@@ -80,8 +90,9 @@ class LoginController extends Controller
         $tokenResult = $account->createToken('Personal Access Token');
 
         $token = $tokenResult->token;
-        if ($request->remember_me)
+        if ($request->remember_me) {
             $token->expires_at = Carbon::now()->addWeeks(1);
+        }
         $token->save();
 
         return response()->json([
@@ -91,17 +102,16 @@ class LoginController extends Controller
         ]);
     }
 
-    public function logout(Request $request)
-    {
+    public function logout(Request $request) {
         $request->account()->token()->revoke();
 
         return response()->json([
-            'message' => 'Successfully logged out'
+            "status" => "success",
+            'message' => 'Logged out successfully'
         ]);
     }
 
-    public function account(Request $request)
-    {
+    public function account(Request $request) {
         return response()->json($request->account());
     }
 }

@@ -2,7 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\LoginController;
+use App\Http\Controllers\Api\V1\CardController;
+use App\Http\Controllers\Api\V1\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,10 +16,13 @@ use App\Http\Controllers\LoginController;
 |
 */
 
-Route::post('/account/signUp', [LoginController::class,'signUp']);
-Route::post('/account/login',[LoginController::class,'login']);
-
-Route::group(['middleware' => 'auth:api'],function(){
-    //LOGIN CONTROLLER
-Route::get('/account/logout',[LoginController::class,'logout']);
+Route::prefix("v1")->group(function () {
+    Route::post('/account/signUp', [LoginController::class, 'signUp']);
+    Route::post('/account/login', [LoginController::class, 'login']);
+    Route::group(['middleware' => 'auth:api'], function () {
+        // LOGIN CONTROLLER
+        Route::post('/account/logout', [LoginController::class, 'logout']);
+        // CARD CONTROLLER
+        Route::get('/card/get', [CardController::class, 'getCard']);
+    });
 });
