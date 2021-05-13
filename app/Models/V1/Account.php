@@ -51,7 +51,8 @@ class Account extends Authenticatable {
      * @var array
      */
     protected $casts = [
-        "roleId" => "integer"
+        "roleId" => "integer",
+        "createdAt" => "datetime"
     ];
 
     /**

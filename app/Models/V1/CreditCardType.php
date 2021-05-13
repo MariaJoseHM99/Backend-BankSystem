@@ -13,7 +13,7 @@ class CreditCardType extends Model {
      *
      * @var string
      */
-    protected $table = "creditCardType";
+    protected $table = "credit_card_type";
 
     /**
      * Primary key in table.

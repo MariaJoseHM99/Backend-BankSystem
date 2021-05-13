@@ -42,13 +42,13 @@ class Transaction extends Model {
      * @var array
      */
     protected $casts = [
-        "cardId" => "integer",
-        "counterpartCardId" => "integer",
+        "destinationCardId" => "integer",
+        "originCardId" => "integer",
         "type" => "integer",
-        "createdAt" => "dateTime",
-        "amount" => "number",
-        "interestRate" => "number",
-        "surchargeRate" => "number",
+        "createdAt" => "datetime",
+        "amount" => "float",
+        "interestRate" => "float",
+        "surchargeRate" => "float",
         "status" => "integer",
     ];
 
@@ -58,4 +58,16 @@ class Transaction extends Model {
      * @var array
      */
     protected $dates = [];
+
+    /**
+     * Saves or updates transaction in database.
+     *
+     * @throws Exception
+     * @return void
+     */
+    public function saveTransaction() {
+        if (!$this->save()) {
+            throw new \Exception("An error occurred on saving transaction.");
+        }
+    }
 }

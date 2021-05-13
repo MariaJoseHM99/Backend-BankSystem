@@ -15,7 +15,7 @@ return [
 
     'defaults' => [
         'guard' => 'web',
-        'passwords' => 'account',
+        'passwords' => 'account_v1',
     ],
 
     /*
@@ -38,12 +38,12 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'account',
+            'provider' => 'account_v1',
         ],
 
         'api' => [
             'driver' => 'passport',
-            'provider' => 'account',
+            'provider' => 'account_v1',
             'hash' => false,
         ],
     ],
@@ -66,9 +66,9 @@ return [
     */
 
     'providers' => [
-        'account' => [
+        'account_v1' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            'model' => App\Models\V1\Account::class,
         ],
 
         // 'users' => [
@@ -93,8 +93,8 @@ return [
     */
 
     'passwords' => [
-        'account' => [
-            'provider' => 'account',
+        'account_v1' => [
+            'provider' => 'account_v1',
             'table' => 'password_resets',
             'expire' => 60,
             'throttle' => 60,

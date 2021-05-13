@@ -36,6 +36,8 @@ class Init extends Migration {
         });
         Schema::create("card", function (Blueprint $table) {
             $table->increments("cardId");
+            $table->integer("accountId")->unsigned();
+            $table->foreign("accountId")->references("accountId")->on("account");
             $table->string("cardNumber", 16)->unique();
             $table->integer("cvv");
             $table->date("expirationDate");
@@ -44,34 +46,34 @@ class Init extends Migration {
             $table->integer("type"); // 0 -> debit | 1 -> credit
             $table->integer("status"); // CARD_STATUS
         });
-        Schema::create("debitCard", function (Blueprint $table) {
+        Schema::create("debit_card", function (Blueprint $table) {
             $table->integer("cardId")->unsigned();
             $table->foreign("cardId")->references("cardId")->on("card");
             $table->primary("cardId");
             $table->float("balance");
         });
-        Schema::create("creditCardType", function (Blueprint $table) {
+        Schema::create("credit_card_type", function (Blueprint $table) {
             $table->increments("creditCardTypeId");
             $table->string("fundingLevel", 15)->unique();
             $table->float("interestRate");
             $table->float("credit");
         });
-        Schema::create("creditCard", function (Blueprint $table) {
+        Schema::create("credit_card", function (Blueprint $table) {
             $table->integer("cardId")->unsigned();
             $table->foreign("cardId")->references("cardId")->on("card");
             $table->primary("cardId");
             $table->integer("creditCardTypeId")->unsigned();
-            $table->foreign("creditCardTypeId")->references("creditCardTypeId")->on("creditCardType");
+            $table->foreign("creditCardTypeId")->references("creditCardTypeId")->on("credit_card_type");
             $table->float("credit");
             $table->integer("payday");
             $table->float("positiveBalance");
         });
         Schema::create("transaction", function (Blueprint $table) {
             $table->increments("transactionId");
-            $table->integer("cardId")->unsigned();
-            $table->foreign("cardId")->references("cardId")->on("card");
-            $table->integer("counterpartCardId")->unsigned()->nullable();
-            $table->foreign("counterpartCardId")->references("cardId")->on("card");
+            $table->integer("destinationCardId")->unsigned();
+            $table->foreign("destinationCardId")->references("cardId")->on("card");
+            $table->integer("originCardId")->unsigned()->nullable();
+            $table->foreign("originCardId")->references("cardId")->on("card");
             $table->integer("type"); // TRANSACTION_TYPE
             $table->dateTime("createdAt");
             $table->float("amount");

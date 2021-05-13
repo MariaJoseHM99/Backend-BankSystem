@@ -17,15 +17,15 @@ class LoginController extends Controller {
     public function signUp(Request $request) {
         $validation = $request->validate([
             'name' => 'required|string',
-            'lastname' => 'required|string',
+            'lastName' => 'required|string',
             'username' => 'required|string',
             'birthdate' => 'required|date',
             'street' => 'required|string',
             'extNumber' => 'required|string',
-            'intNumber' => 'required|string',
+            'intNumber' => 'nullable|string',
             'colony' => 'required|string',
             'zipCode' => 'required|string',
-            'cellphoneNumber' => 'string',
+            'cellphoneNumber' => 'nullable|string',
             'homePhone' => 'required|string',
             'email' => 'required|string|email|unique:account',
             'password' => 'required|string'
@@ -33,7 +33,7 @@ class LoginController extends Controller {
 
         $account = new Account();
         $account->name = $request->input("name");
-        $account->lastname = $request->input("lastname");
+        $account->lastName = $request->input("lastName");
         $account->username = $request->input("username");
         $account->birthdate = $request->input("birthdate");
         $account->street = $request->input("street");

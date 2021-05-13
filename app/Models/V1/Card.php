@@ -2,11 +2,13 @@
 
 namespace App\Models\V1;
 
+use Auth;
 use App\Enums\CardType;
+use DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-abstract class Card extends Model {
+class Card extends Model {
     use HasFactory;
 
     /**
@@ -48,7 +50,7 @@ abstract class Card extends Model {
     protected $casts = [
         "cvv" => "integer",
         "pin" => "integer",
-        "createdAt" => "dateTime",
+        "createdAt" => "datetime",
         "type" => "integer",
         "status" => "integer",
     ];
@@ -63,25 +65,80 @@ abstract class Card extends Model {
     ];
 
     /**
+     * Returns all this card transactions.
+     *
+     * @return array
+     */
+    public function transactions() {
+        return Transaction::where("destinationCardId", $this->cardId)->get();
+    }
+
+    /**
+     * Returns all this card transactions by month and year.
+     *
+     * @param integer $month
+     * @param integer $year
+     * @return array
+     */
+    public function transactionsByDate(int $month, int $year) {
+        $lastMonthDay = date("t", strtotime("$year-$month-1"));
+        return Transaction::where("destinationCardId", $this->cardId)
+            ->where("createdAt", ">=", "$year-$month-1")
+            ->where("createdAt", "<=", "$year-$month-$lastMonthDay")
+            ->get();
+    }
+
+    /**
      * Returns debit or credit card instance.
      *
-     * @param int $cardId
+     * @param string $cardId
      * @throws Exception
      * @return mixed
      */
     public static function getCardById($cardId) {
-        $card = static::find($cardId);
+        $card = DB::table("card")->select("type")->where("cardId", $cardId)->get()->first();
         if ($card == null) {
             throw new \Exception("Card not found.");
         }
         $debitCreditCard = null;
         if ($card->type == CardType::DEBIT) {
-            $debitCreditCard = DebitCard::find($cardId);
+            $debitCreditCard = DebitCard::with("card")->find($cardId);
             if ($debitCreditCard == null) {
                 throw new \Exception("Debit card not found.");
             }
         } elseif ($card->type == CardType::CREDIT) {
-            $debitCreditCard = CreditCard::find($cardId);
+            $debitCreditCard = CreditCard::with("card")->find($cardId);
+            if ($debitCreditCard == null) {
+                throw new \Exception("Credit card not found.");
+            }
+        }
+        return $debitCreditCard;
+    }
+
+    /**
+     * Returns debit or credit card instance.
+     *
+     * @param string $cardNumber
+     * @throws Exception
+     * @return mixed
+     */
+    public static function getCardByNumber($cardNumber) {
+        $card = DB::table("card")->select("cardId", "accountId", "type")
+            ->where("cardNumber", $cardNumber)->get()->first();
+        if ($card == null) {
+            throw new \Exception("Card not found.");
+        }
+        if ($card->accountId != Auth::user()->accountId) {
+            throw new \Exception("Not authorized.");
+        }
+        $debitCreditCard = null;
+        if ($card->type == CardType::DEBIT) {
+            $debitCreditCard = DebitCard::find($card->cardId);
+            if ($debitCreditCard == null) {
+                throw new \Exception("Debit card not found.");
+            }
+        } elseif ($card->type == CardType::CREDIT) {
+            $debitCreditCard = CreditCard::find($card->cardId);
             if ($debitCreditCard == null) {
                 throw new \Exception("Credit card not found.");
             }

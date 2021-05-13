@@ -7,6 +7,7 @@ use App\Models\V1\Card;
 use App\Models\V1\CreditCard;
 use App\Models\V1\DebitCard;
 use Illuminate\Http\Request;
+use Validator;
 
 class CardController extends Controller {
     
@@ -18,24 +19,25 @@ class CardController extends Controller {
      */
     public function getCard(Request $request) {
         $validator = Validator::make($request->all(), [
-            "id" => "required|integer"
+            "cardNumber" => "required|string|min:16|max:16"
         ]);
         if ($validator->fails()) {
             return response()->json([
-                "status" => "success",
-                "message" => "ID not submitted."
+                "status" => "failure",
+                "message" => "Invalid card number."
             ], 400);
         }
         try {
-            $card = Card::getCardById($request->input("id"));
+            $card = Card::getCardByNumber($request->input("cardNumber"));
             return response()->json([
                 "status" => "success",
-                "data" => $card
+                "data" => array_merge($card->toArray(), $card->card->toArray())
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 "status" => "failure",
-                "message" => "An error occurred on fetching the card."
+                "message" => "An error occurred on fetching the card.",
+                "reason" => $e->getMessage()
             ], 500);
         }
     }

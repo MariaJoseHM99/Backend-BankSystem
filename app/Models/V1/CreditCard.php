@@ -2,10 +2,12 @@
 
 namespace App\Models\V1;
 
+use App\Enums\TransactionStatus;
+use DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CreditCard extends Model {
+class CreditCard extends Card {
     use HasFactory;
 
     /**
@@ -13,7 +15,7 @@ class CreditCard extends Model {
      *
      * @var string
      */
-    protected $table = "creditCard";
+    protected $table = "credit_card";
 
     /**
      * Primary key in table.
@@ -43,7 +45,7 @@ class CreditCard extends Model {
      */
     protected $casts = [
         "creditCardTypeId" => "integer",
-        "credit" => "number",
+        "credit" => "float",
         "payday" => "integer",
         "positiveBalance" => "float",
     ];
@@ -54,4 +56,36 @@ class CreditCard extends Model {
      * @var array
      */
     protected $dates = [];
+
+    public function getUnpaidTransactions() {
+        return Transaction::where("status", TransactionStatus::PENDING)->orderBy("createdAt", "asc")->get();
+    }
+
+    public function createMonthlyPayment($amount, $reference, $concept) {
+        $CUT_DAY = 15;
+        $SURCHARGE_RATE = 0.05;
+        $MIN_RATE = 0.015;
+        $minAmount = 0;
+        $currentMonth = date("m");
+        $currentYear = date("Y");
+        if ($amount <= 0) {
+            throw new \Exception("Amount must be higher than zero.");
+        }
+        $originalAmount = $amount;
+        $unpaidTransactions = $this->getUnpaidTransactions();
+        
+        if ($amount < $minAmount) {
+            throw new \Exception("Amount must be higher or equal than minimum amount.");
+        }
+        $currentDay = date("d", time());
+        try {
+            DB::beginTransaction();
+            // TODO: Finish this
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+        }
+        
+    }
 }

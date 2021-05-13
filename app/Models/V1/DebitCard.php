@@ -2,10 +2,12 @@
 
 namespace App\Models\V1;
 
+use App\Enums\TransactionType;
+use DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DebitCard extends Model {
+class DebitCard extends Card {
     use HasFactory;
 
     /**
@@ -13,7 +15,7 @@ class DebitCard extends Model {
      *
      * @var string
      */
-    protected $table = "debitCard";
+    protected $table = "debit_card";
 
     /**
      * Primary key in table.
@@ -42,7 +44,7 @@ class DebitCard extends Model {
      * @var array
      */
     protected $casts = [
-        "balance" => "number",
+        "balance" => "float",
     ];
 
     /**
@@ -52,20 +54,41 @@ class DebitCard extends Model {
      */
     protected $dates = [];
 
+    public function card() {
+        return $this->hasOne(Card::class, "cardId", "cardId");
+    }
+
     /**
      * Deposits an amount to the balance.
      *
      * @param float $amount
+     * @param string $reference
+     * @param string $concept
      * @throws Exception
      * @return void
      */
-    public function deposit($amount) {
-        if ($amount < 0) {
+    public function deposit($amount, $reference, $concept) {
+        if ($amount <= 0) {
             throw new \Exception("Amount must be higher than zero.");
         }
         $this->balance += $amount;
-        if (!$this->save()) {
-            throw new \Exception("An error occurred on saving balance.");
+        $transaction = new Transaction();
+        $transaction->destinationCardId = $this->cardId;
+        $transaction->type = TransactionType::DEPOSIT;
+        $transaction->createdAt = date("Y-m-d H:i:s", time());
+        $transaction->amount = $amount;
+        $transaction->reference = $reference;
+        $transaction->concept = $concept;
+        try {
+            DB::beginTransaction();
+            if (!$this->save()) {
+                throw new \Exception("An error occurred on saving balance.");
+            }
+            $transaction->saveTransaction();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 
@@ -73,19 +96,36 @@ class DebitCard extends Model {
      * Withdraws an amount from the balance.
      *
      * @param float $amount
+     * @param string $reference
+     * @param string $concept
      * @throws Exception
      * @return void
      */
-    public function withdraw($amount) {
-        if ($amount < 0) {
+    public function withdraw($amount, $reference, $concept) {
+        if ($amount <= 0) {
             throw new \Exception("Amount must be higher than zero.");
         }
         if ($this->balance < $amount) {
             throw new \Exception("Amount must be lower or equal than current balance.");
         }
         $this->balance -= $amount;
-        if (!$this->save()) {
-            throw new \Exception("An error occurred on saving balance.");
+        $transaction = new Transaction();
+        $transaction->destinationCardId = $this->cardId;
+        $transaction->type = TransactionType::WITHDRAWAL;
+        $transaction->createdAt = date("Y-m-d H:i:s", time());
+        $transaction->amount = $amount;
+        $transaction->reference = $reference;
+        $transaction->concept = $concept;
+        try {
+            DB::beginTransaction();
+            if (!$this->save()) {
+                throw new \Exception("An error occurred on saving balance.");
+            }
+            $transaction->saveTransaction();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 }
