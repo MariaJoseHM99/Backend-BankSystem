@@ -49,4 +49,13 @@ class Role extends Model {
      * @var array
      */
     protected $dates = [];
+
+    public static function getRoleByName(string $name) {
+        $role = Role::where("name", $name)->get()->first();
+        if ($role == null) {
+            throw new \Exception("Role not found.");
+        }
+        return $role;
+    }
+
 }

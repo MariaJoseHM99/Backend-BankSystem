@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Tttp\Token;
+use Carbon\Carbon;
 
 class Account extends Authenticatable {
     use HasFactory, Notifiable, HasApiTokens;
@@ -63,4 +65,24 @@ class Account extends Authenticatable {
     protected $dates = [
         "birthdate"
     ];
+
+    public function saveAccount() {
+        if (!$this->save()) {
+            throw new \Exception("An error occurred on saving account.");
+        }
+    }
+
+    public static function getAccountByEmail(string $email){
+        $account = Account::where("email", $email)->get()->first();
+        if ($account == null) {
+            throw new \Exception("Account not found.");
+        }
+        return $account;
+    }
+
+    public function saveToken(){
+        if (!$this->save()) {
+            throw new \Exception("An error occurred on saving account.");
+        }
+    }
 }
