@@ -66,13 +66,17 @@ class Account extends Authenticatable {
         "birthdate"
     ];
 
+    public function role() {
+        return $this->hasOne(Role::class, "roleId", "roleId");
+    }
+
     public function saveAccount() {
         if (!$this->save()) {
             throw new \Exception("An error occurred on saving account.");
         }
     }
 
-    public static function getAccountByEmail(string $email){
+    public static function getAccountByEmail(string $email) {
         $account = Account::where("email", $email)->get()->first();
         if ($account == null) {
             throw new \Exception("Account not found.");
@@ -80,9 +84,15 @@ class Account extends Authenticatable {
         return $account;
     }
 
-    public function saveToken(){
-        if (!$this->save()) {
-            throw new \Exception("An error occurred on saving account.");
-        }
+    public function generateToken() {
+        $tokenResult = $this->createToken('Personal Access Token');
+        $token = $tokenResult->token;  
+        $token->expires_at = Carbon::now()->addWeeks(1);
+        $token->save();
+        return [
+            'access_token' => $tokenResult->accessToken,
+            'token_type' => 'Bearer',
+            'expires_at' => Carbon::parse($token->expires_at)->toDateTimeString()
+        ];
     }
 }

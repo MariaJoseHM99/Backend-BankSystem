@@ -24,12 +24,12 @@ Route::prefix("v1")->group(function () {
         // LOGIN CONTROLLER
         Route::post('/account/logout', [LoginController::class, 'logout']);
         // CARD CONTROLLER
-        Route::get('/card/get', [CardController::class, 'getCard']);
+        Route::get('/card/{cardNumber}/get', [CardController::class, 'getCard']);
         // TRANSACTION CONTROLLER
         Route::get('/card/{cardId}/transaction/get', [TransactionController::class, 'getCardTransactions']);
         Route::get('/card/{cardId}/transaction/date/{year}/{month}/get', [TransactionController::class, 'getCardTransactionsByDate']);
-        Route::get('/card/{cardId}/transaction/deposit', [TransactionController::class, 'createDepositTransaction']);
-        Route::get('/card/{cardId}/transaction/withdraw', [TransactionController::class, 'createWithdrawalTransaction']);
-        Route::get('/card/{cardId}/transaction/monthlyPayment', [TransactionController::class, 'createMonthlyPaymentTransaction']);
+        Route::post('/card/{cardId}/transaction/deposit', [TransactionController::class, 'createDepositTransaction']);
+        Route::post('/card/{cardId}/transaction/withdraw', [TransactionController::class, 'createWithdrawalTransaction']);
+        Route::post('/card/{cardId}/transaction/monthlyPayment', [TransactionController::class, 'createMonthlyPaymentTransaction']);
     });
 });

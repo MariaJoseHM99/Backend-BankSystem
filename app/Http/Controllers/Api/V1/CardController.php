@@ -17,8 +17,8 @@ class CardController extends Controller {
      * @param Request $request
      * @return string
      */
-    public function getCard(Request $request) {
-        $validator = Validator::make($request->all(), [
+    public function getCard(Request $request, string $cardNumber) {
+        $validator = Validator::make(["cardNumber" => $cardNumber], [
             "cardNumber" => "required|string|min:16|max:16"
         ]);
         if ($validator->fails()) {
@@ -28,7 +28,7 @@ class CardController extends Controller {
             ], 400);
         }
         try {
-            $card = Card::getCardByNumber($request->input("cardNumber"));
+            $card = Card::getCardByNumber($cardNumber);
             return response()->json([
                 "status" => "success",
                 "data" => array_merge($card->toArray(), $card->card->toArray())

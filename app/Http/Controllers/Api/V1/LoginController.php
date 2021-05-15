@@ -68,8 +68,7 @@ class LoginController extends Controller {
             'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
-
-        try{
+        try {
             $account = Account::getAccountByEmail($request->input("email"));
             if (!Hash::check($request->input("password"), $account->password)) {
                 return response()->json([
@@ -77,18 +76,16 @@ class LoginController extends Controller {
                     'message' => 'Unauthorized Password'
                 ], 401);
             }
-            
-            $tokenResult = $account->createToken('Personal Access Token');
-            $token = $tokenResult->token;  
-            $token->expires_at = Carbon::now()->addWeeks(1);
-            $account->saveToken();
-            return array(
-                'access_token' => $tokenResult->accessToken,
-                'token_type' => 'Bearer',
-                'expires_at' => Carbon::parse($token->expires_at)->toDateTimeString()
-            );
-
-        }catch (\Exception $e) {
+            $tokenData = $account->generateToken();
+            $account->role; // Required to load role data.
+            return response()->json([
+                "status" => "success",
+                "data" => [
+                    "account" => $account,
+                    "token" => $tokenData
+                ]
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 "status" => "failure",
                 "message" => $e->getMessage()

@@ -3,6 +3,7 @@
 namespace App\Models\V1;
 
 use App\Enums\TransactionStatus;
+use App\Enums\TransactionType;
 use DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -65,15 +66,38 @@ class CreditCard extends Card {
         $CUT_DAY = 15;
         $SURCHARGE_RATE = 0.05;
         $MIN_RATE = 0.015;
-        $minAmount = 0;
         $currentMonth = date("m");
         $currentYear = date("Y");
         if ($amount <= 0) {
             throw new \Exception("Amount must be higher than zero.");
         }
         $originalAmount = $amount;
-        $unpaidTransactions = $this->getUnpaidTransactions();
-        
+        $transactions = Transaction::where("cardId", $this->cardId)->get();
+        $transactionsArr = \array_reduce($transactions, function ($currArr, $transaction) {
+            if ($transaction->createdAt->year < $currentYear || $transaction->createdAt->month < $currentMonth) {
+                // $existentMonthlyPayment = Transaction::where("cardId", $this->cardId)
+                //     ->where("type", TransactionType::MONTHLY_PAYMENT)
+                //     ->where("createdAt", "")
+                // if ()
+                $currArr[] = [
+                    "amountDebt" => $transaction->amount,
+                    "surcharge" => $transaction->amount * $SURCHARGE_RATE,
+                    "interestRate" => $interest
+                ];
+            }
+        }, []);
+        $amountNotPaid = DB::table("transaction")->select(
+            "SELECT (sumAmount - amountPaid) AS amountNotPaid FROM (
+                SELECT IFNULL(SUM(amount), 0) AS sumAmount FROM transaction
+            ) pending_q, (
+                SELECT IFNULL(SUM(amount), 0) AS amountPaid FROM transaction WHERE type = 4
+            ) paid_q"
+        )[0]->amountNotPaid;
+        $amountNotPaid += $this->positiveBalance;
+        if ($amountNotPaid <= 0) {
+            throw new \Exception("There are no debt amount.");
+        }
+        $minAmount = $amountNotPaid * $MIN_RATE;
         if ($amount < $minAmount) {
             throw new \Exception("Amount must be higher or equal than minimum amount.");
         }
