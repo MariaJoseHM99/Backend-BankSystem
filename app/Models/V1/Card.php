@@ -4,6 +4,7 @@ namespace App\Models\V1;
 
 use Auth;
 use App\Enums\CardType;
+use App\Enums\RoleType;
 use DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -96,9 +97,12 @@ class Card extends Model {
      * @return mixed
      */
     public static function getCardById($cardId) {
-        $card = DB::table("card")->select("type")->where("cardId", $cardId)->get()->first();
+        $card = DB::table("card")->select("type", "accountId")->where("cardId", $cardId)->get()->first();
         if ($card == null) {
             throw new \Exception("Card not found.");
+        }
+        if ($card->accountId != Auth::user()->accountId && Auth::user()->role == RoleType::CLIENT) {
+            throw new \Exception("Not authorized.");
         }
         $debitCreditCard = null;
         if ($card->type == CardType::DEBIT) {
@@ -128,7 +132,7 @@ class Card extends Model {
         if ($card == null) {
             throw new \Exception("Card not found.");
         }
-        if ($card->accountId != Auth::user()->accountId) {
+        if ($card->accountId != Auth::user()->accountId && Auth::user()->role == RoleType::CLIENT) {
             throw new \Exception("Not authorized.");
         }
         $debitCreditCard = null;

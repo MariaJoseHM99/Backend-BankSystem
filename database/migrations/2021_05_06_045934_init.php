@@ -11,14 +11,9 @@ class Init extends Migration {
      * @return void
      */
     public function up() {
-        Schema::create("role", function (Blueprint $table) {
-            $table->increments("roleId");
-            $table->string("name", 25)->unique();
-        });
         Schema::create("account", function (Blueprint $table) {
             $table->increments("accountId");
-            $table->integer("roleId")->unsigned();
-            $table->foreign("roleId")->references("roleId")->on("role");
+            $table->integer("role")->unsigned(); // ROLE_TYPE
             $table->string("username", 20)->unique();
             $table->string("password");
             $table->string("name", 25);
@@ -41,7 +36,7 @@ class Init extends Migration {
             $table->string("cardNumber", 16)->unique();
             $table->integer("cvv");
             $table->date("expirationDate");
-            $table->integer("pin");
+            $table->string("pin");
             $table->dateTime("createdAt");
             $table->integer("type"); // 0 -> debit | 1 -> credit
             $table->integer("status"); // CARD_STATUS
@@ -65,7 +60,6 @@ class Init extends Migration {
             $table->integer("creditCardTypeId")->unsigned();
             $table->foreign("creditCardTypeId")->references("creditCardTypeId")->on("credit_card_type");
             $table->float("credit");
-            $table->integer("payday");
             $table->float("positiveBalance");
         });
         Schema::create("transaction", function (Blueprint $table) {

@@ -2,6 +2,8 @@
 
 namespace App\Models\V1;
 
+use Auth;
+use App\Enums\RoleType;
 use App\Enums\TransactionType;
 use DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -83,6 +85,9 @@ class CreditCard extends Card {
      * @return array
      */
     public function getDebt() {
+        if ($this->card->accountId != Auth::user()->accountId && Auth::user()->role == RoleType::CLIENT) {
+            throw new \Exception("Not authorized.");
+        }
         $config = DB::table("configuration")->orderBy("createdAt", "desc")->take(1)->get()->first();
         $CUT_DAY = 15;
         $SURCHARGE_RATE = $config->surchargeRate;
@@ -102,7 +107,7 @@ class CreditCard extends Card {
         $sumStack = [];
         $monthlyPaymentCounter = 0;
         foreach ($transactions as $transaction) {
-            if ($transaction->type == TransactionType::PAYMENT) {
+            if ($transaction->type == TransactionType::PAYMENT || $transaction->type == TransactionType::WITHDRAWAL) {
                 $latestMonthlyPayment = $transactions->toQuery()->where("type", TransactionType::MONTHLY_PAYMENT)
                     ->get()->skip($monthlyPaymentCounter)->first();
                 if ($latestMonthlyPayment != null) {
@@ -230,6 +235,9 @@ class CreditCard extends Card {
      * @return void
      */
     public function createMonthlyPayment($amount, $reference, $concept) {
+        if ($this->card->accountId != Auth::user()->accountId && Auth::user()->role == RoleType::CLIENT) {
+            throw new \Exception("Not authorized.");
+        }
         if ($amount <= 0) {
             throw new \Exception("Amount must be higher than zero.");
         }
@@ -283,6 +291,46 @@ class CreditCard extends Card {
             DB::beginTransaction();
             if (!$this->save()) {
                 throw new \Exception("An error occurred on saving card.");
+            }
+            $transaction->saveTransaction();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Withdraws an amount from the credit.
+     *
+     * @param float $amount
+     * @param string $reference
+     * @param string $concept
+     * @throws Exception
+     * @return void
+     */
+    public function withdraw($amount, $reference, $concept) {
+        if ($this->card->accountId != Auth::user()->accountId && Auth::user()->role == RoleType::CLIENT) {
+            throw new \Exception("Not authorized.");
+        }
+        if ($amount <= 0) {
+            throw new \Exception("Amount must be higher than zero.");
+        }
+        if ($this->credit < $amount) {
+            throw new \Exception("Amount must be lower or equal than current balance.");
+        }
+        $this->credit -= $amount;
+        $transaction = new Transaction();
+        $transaction->destinationCardId = $this->cardId;
+        $transaction->type = TransactionType::WITHDRAWAL;
+        $transaction->createdAt = date("Y-m-d H:i:s", time());
+        $transaction->amount = $amount;
+        $transaction->reference = $reference;
+        $transaction->concept = $concept;
+        try {
+            DB::beginTransaction();
+            if (!$this->save()) {
+                throw new \Exception("An error occurred on saving balance.");
             }
             $transaction->saveTransaction();
             DB::commit();

@@ -53,7 +53,7 @@ class Account extends Authenticatable {
      * @var array
      */
     protected $casts = [
-        "roleId" => "integer",
+        "role" => "integer",
         "createdAt" => "datetime"
     ];
 
@@ -65,10 +65,6 @@ class Account extends Authenticatable {
     protected $dates = [
         "birthdate"
     ];
-
-    public function role() {
-        return $this->hasOne(Role::class, "roleId", "roleId");
-    }
 
     public function saveAccount() {
         if (!$this->save()) {

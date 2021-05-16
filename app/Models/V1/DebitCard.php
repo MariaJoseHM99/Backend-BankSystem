@@ -2,6 +2,8 @@
 
 namespace App\Models\V1;
 
+use Auth;
+use App\Enums\RoleType;
 use App\Enums\TransactionType;
 use DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -73,6 +75,9 @@ class DebitCard extends Card {
      * @return void
      */
     public function deposit($amount, $reference, $concept) {
+        if ($this->card->accountId != Auth::user()->accountId && Auth::user()->role == RoleType::CLIENT) {
+            throw new \Exception("Not authorized.");
+        }
         if ($amount <= 0) {
             throw new \Exception("Amount must be higher than zero.");
         }
@@ -107,6 +112,9 @@ class DebitCard extends Card {
      * @return void
      */
     public function withdraw($amount, $reference, $concept) {
+        if ($this->card->accountId != Auth::user()->accountId && Auth::user()->role == RoleType::CLIENT) {
+            throw new \Exception("Not authorized.");
+        }
         if ($amount <= 0) {
             throw new \Exception("Amount must be higher than zero.");
         }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\V1\Account;
 use App\Models\V1\Role;
+use App\Enums\RoleType;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -45,7 +46,7 @@ class LoginController extends Controller {
             $account->homePhone = $request->input("homePhone");
             $account->email = $request->input("email");
             $account->password = Hash::make($request->input("password"));
-            $account->roleId = Role::getRoleByName("Cliente")->roleId;
+            $account->role = RoleType::CLIENT;
             $account->createdAt = date("Y-m-d H:i:s");
 
             $account->saveAccount();
@@ -79,7 +80,6 @@ class LoginController extends Controller {
                 ], 401);
             }
             $tokenData = $account->generateToken();
-            $account->role; // Required to load role data.
             return response()->json([
                 "status" => "success",
                 "data" => [

@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\V1\Role;
+use App\Models\V1\CreditCardType;
 use DB;
 use Illuminate\Database\Seeder;
 
@@ -13,12 +13,6 @@ class DatabaseSeeder extends Seeder {
      * @return void
      */
     public function run() {
-        $roles = ["Cliente", "Gerente de sucursal", "Ejecutivo"];
-        foreach ($roles as $role) {
-            $newRole = new Role();
-            $newRole->name = $role;
-            $newRole->save();
-        }
         DB::table("configuration")->insert([
             "createdAt" => date("Y-m-d"),
             "surchargeRate" => 0.028,

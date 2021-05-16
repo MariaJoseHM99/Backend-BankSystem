@@ -134,13 +134,6 @@ class TransactionController extends Controller {
         }
         try {
             $card = Card::getCardById($cardId);
-            if ($card instanceof CreditCard) {
-                return response()->json([
-                    "status" => "failure",
-                    "message" => "An error occurred on creating the transaction.",
-                    "reason" => "Destination card is not a debit card."
-                ], 400);
-            }
             $card->withdraw(
                 $request->input("amount"),
                 $request->input("reference"),
