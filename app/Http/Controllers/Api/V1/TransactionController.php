@@ -69,7 +69,8 @@ class TransactionController extends Controller {
         } catch (\Exception $e) {
             return response()->json([
                 "status" => "failure",
-                "message" => $e->getMessage()
+                "message" => "An error occurred on creating the transaction.",
+                "reason" => $e->getMessage()
             ], 500);
         }
     }
@@ -85,7 +86,8 @@ class TransactionController extends Controller {
         if (!$this->_hasValidData($request->all())) {
             return response()->json([
                 "status" => "failure",
-                "message" => "Not enough fields or invalid data."
+                "message" => "An error occurred on creating the transaction.",
+                "reason" => "Not enough fields or invalid data."
             ], 400);
         }
         try {
@@ -93,7 +95,8 @@ class TransactionController extends Controller {
             if ($card instanceof CreditCard) {
                 return response()->json([
                     "status" => "failure",
-                    "message" => "Destination card is not a debit card."
+                    "message" => "An error occurred on creating the transaction.",
+                    "reason" => "Destination card is not a debit card."
                 ], 400);
             }
             $card->deposit(
@@ -108,7 +111,8 @@ class TransactionController extends Controller {
         } catch (\Exception $e) {
             return response()->json([
                 "status" => "failure",
-                "message" => $e->getMessage()
+                "message" => "An error occurred on creating the transaction.",
+                "reason" => $e->getMessage()
             ], 500);
         }
     }
@@ -124,7 +128,8 @@ class TransactionController extends Controller {
         if (!$this->_hasValidData($request->all())) {
             return response()->json([
                 "status" => "failure",
-                "message" => "Not enough fields or invalid data."
+                "message" => "An error occurred on creating the transaction.",
+                "reason" => "Not enough fields or invalid data."
             ], 400);
         }
         try {
@@ -132,7 +137,8 @@ class TransactionController extends Controller {
             if ($card instanceof CreditCard) {
                 return response()->json([
                     "status" => "failure",
-                    "message" => "Destination card is not a debit card."
+                    "message" => "An error occurred on creating the transaction.",
+                    "reason" => "Destination card is not a debit card."
                 ], 400);
             }
             $card->withdraw(
@@ -147,7 +153,8 @@ class TransactionController extends Controller {
         } catch (\Exception $e) {
             return response()->json([
                 "status" => "failure",
-                "message" => $e->getMessage()
+                "message" => "An error occurred on creating the transaction.",
+                "reason" => $e->getMessage()
             ], 500);
         }
     }
@@ -158,19 +165,21 @@ class TransactionController extends Controller {
      * @param Request $request
      * @return string
      */
-    public function createMonthlyPaymentTransaction(Request $request) {
-        if (!_hasValidData($request->all())) {
+    public function createMonthlyPaymentTransaction(Request $request, int $cardId) {
+        if (!$this->_hasValidData($request->all())) {
             return response()->json([
                 "status" => "failure",
-                "message" => "Not enough fields or invalid data."
+                "message" => "An error occurred on creating the transaction.",
+                "reason" => "Not enough fields or invalid data."
             ], 400);
         }
         try {
-            $card = Card::getCardById($request->input("destinationCardId"));
+            $card = Card::getCardById($cardId);
             if ($card instanceof DebitCard) {
                 return response()->json([
                     "status" => "failure",
-                    "message" => "Destination card is not a credit card."
+                    "message" => "An error occurred on creating the transaction.",
+                    "reason" => "Destination card is not a credit card."
                 ], 400);
             }
             $card->createMonthlyPayment(
@@ -180,12 +189,13 @@ class TransactionController extends Controller {
             );
             return response()->json([
                 "status" => "success",
-                "message" => "Transaction created."
+                "message" => "Transaction registered."
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 "status" => "failure",
-                "message" => "An error occurred on creating the transaction."
+                "message" => "An error occurred on creating the transaction.",
+                "reason" => $e->getMessage()
             ], 500);
         }
     }

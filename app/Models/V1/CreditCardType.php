@@ -42,8 +42,8 @@ class CreditCardType extends Model {
      * @var array
      */
     protected $casts = [
-        "interestRate" => "number",
-        "credit" => "number",
+        "interestRate" => "float",
+        "credit" => "float",
     ];
 
     /**

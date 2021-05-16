@@ -52,13 +52,14 @@ class LoginController extends Controller {
 
             return response()->json([
                 "status" => "success",
-                'message' => 'Account created successfully!'
+                "message" => "Account created successfully!"
             ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
                 "status" => "failure",
-                "message" => $e->getMessage()
+                "message" => "An error occurred on creating the account.",
+                "reason" => $e->getMessage()
             ], 500);
         }
     }
@@ -73,7 +74,8 @@ class LoginController extends Controller {
             if (!Hash::check($request->input("password"), $account->password)) {
                 return response()->json([
                     "status" => "failure",
-                    'message' => 'Unauthorized Password'
+                    "message" => "An error occurred on fetching the account.",
+                    "reason" => "Account not found."
                 ], 401);
             }
             $tokenData = $account->generateToken();
@@ -88,7 +90,8 @@ class LoginController extends Controller {
         } catch (\Exception $e) {
             return response()->json([
                 "status" => "failure",
-                "message" => $e->getMessage()
+                "message" => "An error occurred on fetching the account.",
+                "reason" => $e->getMessage()
             ], 500);
         }   
     }
@@ -98,7 +101,7 @@ class LoginController extends Controller {
 
         return response()->json([
             "status" => "success",
-            'message' => 'Logged out successfully'
+            "message" => "Logged out successfully"
         ]);
     }
 }

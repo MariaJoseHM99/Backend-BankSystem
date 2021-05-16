@@ -54,6 +54,11 @@ class DebitCard extends Card {
      */
     protected $dates = [];
 
+    /**
+     * Relationship with Card.
+     *
+     * @return Card
+     */
     public function card() {
         return $this->hasOne(Card::class, "cardId", "cardId");
     }

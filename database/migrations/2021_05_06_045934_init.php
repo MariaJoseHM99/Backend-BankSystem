@@ -55,7 +55,7 @@ class Init extends Migration {
         Schema::create("credit_card_type", function (Blueprint $table) {
             $table->increments("creditCardTypeId");
             $table->string("fundingLevel", 15)->unique();
-            $table->float("interestRate");
+            $table->float("interestRate", 8, 3);
             $table->float("credit");
         });
         Schema::create("credit_card", function (Blueprint $table) {
@@ -79,9 +79,13 @@ class Init extends Migration {
             $table->float("amount");
             $table->string("reference", 6);
             $table->string("concept", 25)->nullable();
-            $table->float("interestRate")->nullable();
-            $table->float("surchargeRate")->nullable();
-            $table->integer("status")->nullable(); // TRANSACTION_STATUS
+            $table->float("interestRate", 8, 3)->nullable();
+            $table->float("surchargeRate", 8, 3)->nullable();
+        });
+        Schema::create("configuration", function (Blueprint $table) {
+            $table->date("createdAt")->primary();
+            $table->float("surchargeRate", 8, 3);
+            $table->float("minAmountRate", 8, 3);
         });
     }
 

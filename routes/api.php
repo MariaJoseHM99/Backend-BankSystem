@@ -25,6 +25,7 @@ Route::prefix("v1")->group(function () {
         Route::post('/account/logout', [LoginController::class, 'logout']);
         // CARD CONTROLLER
         Route::get('/card/{cardNumber}/get', [CardController::class, 'getCard']);
+        Route::get('/card/{cardNumber}/getDebt', [CardController::class, 'getCardDebt']);
         // TRANSACTION CONTROLLER
         Route::get('/card/{cardId}/transaction/get', [TransactionController::class, 'getCardTransactions']);
         Route::get('/card/{cardId}/transaction/date/{year}/{month}/get', [TransactionController::class, 'getCardTransactionsByDate']);
