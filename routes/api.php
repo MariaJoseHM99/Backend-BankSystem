@@ -18,12 +18,13 @@ use App\Http\Controllers\Api\V1\TransactionController;
 */
 
 Route::prefix("v1")->group(function () {
-    Route::post('/account/signUp', [LoginController::class, 'signUp']);
     Route::post('/account/login', [LoginController::class, 'login']);
     Route::group(['middleware' => 'auth:api'], function () {
         // LOGIN CONTROLLER
+        Route::post('/account/signUp', [LoginController::class, 'signUp']);
         Route::post('/account/logout', [LoginController::class, 'logout']);
         // CARD CONTROLLER
+        Route::post('/account/{accountId}/card/debit/register', [CardController::class, 'registerDebitCard']);
         Route::get('/card/{cardNumber}/get', [CardController::class, 'getCard']);
         Route::get('/card/{cardNumber}/getDebt', [CardController::class, 'getCardDebt']);
         // TRANSACTION CONTROLLER

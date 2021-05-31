@@ -4,6 +4,7 @@ namespace App\Models\V1;
 
 use Auth;
 use App\Enums\CardType;
+use App\Enums\CardStatus;
 use App\Enums\RoleType;
 use DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -39,7 +40,6 @@ class Card extends Model {
      * @var array
      */
     protected $hidden = [
-        "cvv",
         "pin",
     ];
 
@@ -148,5 +148,49 @@ class Card extends Model {
             }
         }
         return $debitCreditCard;
+    }
+
+    /**
+     * Creates a new debit card and stores it in database.
+     *
+     * @param int $account_id
+     * @throws Exception
+     * @return DebitCard
+     */
+    public static function createDebitCard($accountId) {
+        if (Account::find($accountId) == null) {
+            throw new \Exception("Account not found.");
+        }
+        try {
+            DB::beginTransaction();
+            $card = new Card();
+            $card->accountId = $accountId;
+            $card->cardNumber = \Faker\Factory::create()->creditCardNumber;
+            $card->cvv = rand(111, 999);
+            $card->expirationDate = (new \Carbon\Carbon())->addYears(5);
+            $card->pin = rand(1111, 9999);
+            $card->createdAt = date("Y-m-d H:i:s");
+            $card->type = CardType::DEBIT;
+            $card->status = CardStatus::ACTIVE;
+            $card->save();
+            $debitCard = new DebitCard();
+            $debitCard->cardId = $card->cardId;
+            $debitCard->balance = 0;
+            $debitCard->save();
+            DB::commit();
+            return static::getCardById($card->cardId);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Returns expiration date formatted as Y-m-d.
+     *
+     * @return string
+     */
+    public function getExpirationDate() {
+        return $this->expirationDate->toDateString();
     }
 }

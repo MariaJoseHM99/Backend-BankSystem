@@ -20,7 +20,7 @@ class LoginController extends Controller {
             'name' => 'required|string',
             'lastName' => 'required|string',
             'username' => 'required|string',
-            'birthdate' => 'required|date',
+            'birthdate' => "required|date",
             'street' => 'required|string',
             'extNumber' => 'required|string',
             'intNumber' => 'nullable|string',
@@ -32,6 +32,9 @@ class LoginController extends Controller {
             'password' => 'required|string'
         ]);
         try {
+            if (Auth::user()->role !== RoleType::EXECUTIVE) {
+                throw new \Exception("Unauthorized.");
+            }
             $account = new Account();
             $account->name = $request->input("name");
             $account->lastName = $request->input("lastName");
@@ -53,7 +56,7 @@ class LoginController extends Controller {
 
             return response()->json([
                 "status" => "success",
-                "message" => "Account created successfully!"
+                "data" => $account
             ], 201);
 
         } catch (\Exception $e) {
