@@ -111,7 +111,7 @@ class Card extends Model {
                 throw new \Exception("Debit card not found.");
             }
         } elseif ($card->type == CardType::CREDIT) {
-            $debitCreditCard = CreditCard::with("card")->find($cardId);
+            $debitCreditCard = CreditCard::with("card")->with("creditCardType")->find($cardId);
             if ($debitCreditCard == null) {
                 throw new \Exception("Credit card not found.");
             }
