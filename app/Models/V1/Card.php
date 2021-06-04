@@ -185,6 +185,37 @@ class Card extends Model {
         }
     }
 
+    public static function createCreditCard($accountId) {
+        if (Account::find($accountId) == null) {
+            throw new \Exception("Account not found.");
+        }
+        try {
+            DB::beginTransaction();
+            $card = new Card();
+            $card->accountId = $accountId;
+            $card->cardNumber = \Faker\Factory::create()->creditCardNumber;
+            $card->cvv = rand(111, 999);
+            $card->expirationDate = (new \Carbon\Carbon())->addYears(5);
+            $card->pin = rand(1111, 9999);
+            $card->createdAt = date("Y-m-d H:i:s");
+            $card->type = CardType::CREDIT;
+            $card->status = CardStatus::ACTIVE;
+            $card->save();
+            $creditCard = new CreditCard();
+            $creditCard->cardId = $card->cardId;
+            $credit_card_type = CreditCardType::where("fundingLevel", "Classic")->get()->first();
+            $creditCard->creditCardTypeId = $credit_card_type->creditCardTypeId;
+            $creditCard->credit = $credit_card_type->credit;
+            $creditCard->positiveBalance = 0;
+            $creditCard->save();
+            DB::commit();
+            return static::getCardById($card->cardId);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
     /**
      * Returns expiration date formatted as Y-m-d.
      *

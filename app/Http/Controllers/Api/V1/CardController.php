@@ -43,6 +43,37 @@ class CardController extends Controller {
             ], 500);
         }
     }
+
+    public function registerCreditCard(Request $request, int $accountId) {
+        $validator = Validator::make(["accountId" => $accountId], [
+            "accountId" => "required|integer"
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                "status" => "failure",
+                "message" => "An error occurred on registering the card.",
+                "reason" => "Invalid account ID."
+            ], 400);
+        }
+        try {
+            if (Auth::user()->role !== RoleType::EXECUTIVE) {
+                throw new \Exception("Unauthorized.");
+            }
+            $card = Card::createCreditCard($accountId);
+            $data = array_merge($card->toArray(), $card->card->toArray());
+            $data["card"]["expirationDate"] = $card->card->getExpirationDate();
+            return response()->json([
+                "status" => "success",
+                "data" => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                "status" => "failure",
+                "message" => "An error occurred on creating the account.",
+                "reason" => $e->getMessage()
+            ], 500);
+        }
+    }
     
     /**
      * Returns debit or credit card data.
