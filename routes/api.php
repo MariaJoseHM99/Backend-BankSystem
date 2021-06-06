@@ -28,6 +28,7 @@ Route::prefix("v1")->group(function () {
         Route::post('/account/{accountId}/card/credit/register', [CardController::class, 'registerCreditCard']);
         Route::get('/card/{cardNumber}/get', [CardController::class, 'getCard']);
         Route::get('/card/{cardNumber}/getDebt', [CardController::class, 'getCardDebt']);
+        Route::get('/card/{accountId}/getCardsByAccountId', [CardController::Class, 'getCardsByAccountId']);
         // TRANSACTION CONTROLLER
         Route::get('/card/{cardId}/transaction/get', [TransactionController::class, 'getCardTransactions']);
         Route::get('/card/{cardId}/transaction/date/{year}/{month}/get', [TransactionController::class, 'getCardTransactionsByDate']);

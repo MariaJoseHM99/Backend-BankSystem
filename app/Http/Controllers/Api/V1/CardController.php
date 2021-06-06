@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\RoleType;
 use App\Http\Controllers\Controller;
+use App\Models\V1\Account;
 use App\Models\V1\Card;
 use App\Models\V1\CreditCard;
 use App\Models\V1\DebitCard;
@@ -139,5 +140,24 @@ class CardController extends Controller {
                 "reason" => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function getCardsByAccountId(Request $request, int $accountId) {
+        $cardNumbers = Card::where("accountId", $accountId)->select("cardNumber")->get();
+        $cards = [];
+        foreach ($cardNumbers as $value) {
+            try {
+                $card = Card::getCardByNumber($value->cardNumber);
+                array_merge($card->toArray(), $card->card->toArray());
+                array_push($cards,$card);
+            } catch (\Exception $e) {
+                return response()->json([
+                    "status" => "failure",
+                    "message" => "An error occurred on fetching a card.",
+                    "reason" => $e->getMessage()
+                ], 500);
+            } 
+        }
+        return $cards;
     }
 }

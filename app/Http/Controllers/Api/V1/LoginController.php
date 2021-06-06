@@ -100,7 +100,7 @@ class LoginController extends Controller {
     }
 
     public function logout(Request $request) {
-        $request->account()->token()->revoke();
+        Auth::user()->token()->revoke();
 
         return response()->json([
             "status" => "success",
