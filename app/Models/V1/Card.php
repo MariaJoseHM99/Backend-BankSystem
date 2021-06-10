@@ -153,7 +153,7 @@ class Card extends Model {
     /**
      * Creates a new debit card and stores it in database.
      *
-     * @param int $account_id
+     * @param int $accountId
      * @throws Exception
      * @return DebitCard
      */

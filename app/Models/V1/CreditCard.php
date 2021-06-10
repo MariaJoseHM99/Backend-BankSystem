@@ -86,7 +86,7 @@ class CreditCard extends Card {
      */
     public function getDebt() {
         if ($this->card->accountId != Auth::user()->accountId && Auth::user()->role == RoleType::CLIENT) {
-            throw new \Exception("Not authorized.");
+            throw new \Exception("Unauthorized.");
         }
         $config = DB::table("configuration")->orderBy("createdAt", "desc")->take(1)->get()->first();
         $CUT_DAY = 15;
@@ -102,7 +102,7 @@ class CreditCard extends Card {
             "total" => 0,
         ];
         $currentDate = new \Carbon\Carbon();
-        // $currentDate = \Carbon\Carbon::createFromDate(2021, 6, 15, "America/Mexico_City");
+        // $currentDate = \Carbon\Carbon::createFromDate(2021, 7, 15, "America/Mexico_City");
         $applyGeneralInterest = false;
         $sumStack = [];
         $monthlyPaymentCounter = 0;
@@ -183,12 +183,22 @@ class CreditCard extends Card {
                         while ($daysUntilNextMonthlyPayment > 30) { // 30 or 45?
                             $transactionsArr["interest"] += $transactionsArr["subtotal"] * $interestRate;
                             $daysUntilNextMonthlyPayment -= 45;
+                            $sumStack[] = [
+                                "amount" => $transactionsArr["subtotal"] * $interestRate,
+                                "date" => $transaction->createdAt,
+                                "type" => "interest"
+                            ];
                         }
                     } else {
                         $days = $transaction->createdAt->diffInDays($currentDate);
                         while ($days > 30) {
                             $transactionsArr["interest"] += $transactionsArr["subtotal"] * $interestRate;
                             $days -= 30;
+                            $sumStack[] = [
+                                "amount" => $transactionsArr["subtotal"] * $interestRate,
+                                "date" => $transaction->createdAt,
+                                "type" => "interest"
+                            ];
                         }
                     }
                 }

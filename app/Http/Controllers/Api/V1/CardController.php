@@ -108,6 +108,13 @@ class CardController extends Controller {
         }
     }
 
+    /**
+     * Returns credit card debt.
+     *
+     * @param Request $request
+     * @param string $cardNumber
+     * @return string
+     */
     public function getCardDebt(Request $request, string $cardNumber) {
         $validator = Validator::make(["cardNumber" => $cardNumber], [
             "cardNumber" => "required|string|min:16|max:16"
@@ -142,14 +149,20 @@ class CardController extends Controller {
         }
     }
 
+    /**
+     * Returns all this account cards.
+     *
+     * @param Request $request
+     * @param integer $accountId
+     * @return string
+     */
     public function getCardsByAccountId(Request $request, int $accountId) {
         $cardNumbers = Card::where("accountId", $accountId)->select("cardNumber")->get();
         $cards = [];
-        foreach ($cardNumbers as $value) {
+        foreach ($cardNumbers as $cardNumber) {
             try {
-                $card = Card::getCardByNumber($value->cardNumber);
-                array_merge($card->toArray(), $card->card->toArray());
-                array_push($cards,$card);
+                $card = Card::getCardByNumber($cardNumber->cardNumber);
+                $cards[] = array_merge($card->toArray(), $card->card->toArray());
             } catch (\Exception $e) {
                 return response()->json([
                     "status" => "failure",
@@ -158,6 +171,9 @@ class CardController extends Controller {
                 ], 500);
             } 
         }
-        return $cards;
+        return response()->json([
+            "status" => "success",
+            "data" => $cards
+        ]);
     }
 }
