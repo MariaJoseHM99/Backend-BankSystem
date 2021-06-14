@@ -28,12 +28,20 @@ class LoginController extends Controller {
             'zipCode' => 'required|string',
             'cellphoneNumber' => 'nullable|string',
             'homePhone' => 'required|string',
-            'email' => 'required|string|email|unique:account',
+            'email' => 'required|string|email',
             'password' => 'required|string'
         ]);
         try {
             if (Auth::user()->role !== RoleType::EXECUTIVE) {
                 throw new \Exception("Unauthorized.");
+            }
+            $existsAccount = Account::existsAccountByEmail($request->input("email"));
+            if ($existsAccount) {
+                throw new \Exception("There is already an existent account with this email.");
+            }
+            $existsAccount = Account::existsAccountByUsername($request->input("username"));
+            if ($existsAccount) {
+                throw new \Exception("There is already an existent account with this username.");
             }
             $account = new Account();
             $account->name = $request->input("name");

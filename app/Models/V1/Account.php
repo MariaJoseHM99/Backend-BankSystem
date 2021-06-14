@@ -80,6 +80,24 @@ class Account extends Authenticatable {
         return $account;
     }
 
+    public static function getAccountByUsername(string $username) {
+        $account = Account::where("username", $username)->get()->first();
+        if ($account == null) {
+            throw new \Exception("Account not found.");
+        }
+        return $account;
+    }
+
+    public static function existsAccountByEmail(string $email) {
+        $account = Account::where("email", $email)->get()->first();
+        return $account != null;
+    }
+
+    public static function existsAccountByUsername(string $username) {
+        $account = Account::where("username", $username)->get()->first();
+        return $account != null;
+    }
+
     public function generateToken() {
         $tokenResult = $this->createToken('Personal Access Token');
         $token = $tokenResult->token;  
